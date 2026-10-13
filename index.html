@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f2f2f7">
+<title>恋爱载入中... · 姜好的专属空间</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f2f2f7;
+    --card: rgba(255, 255, 255, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.6);
+    --text: #1c1c1e;
+    --text2: #8e8e93;
+    --text3: #c7c7cc;
+    --line: rgba(60, 60, 67, 0.12);
+    --pink: #f2a6c2;
+    --pink-deep: #e07aa5;
+    --pink-pale: #fff0f6;
+    --radius: 20px;
+  }
+
+  html, body { height: 100%; }
+
+  body {
+    background: #d1d1d6;
+    color: var(--text);
+    font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .app {
+    width: min(100%, 420px);
+    height: min(100vh, 880px);
+    background: var(--bg);
+    border-radius: 36px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.25);
+  }
+
+  /* ============ 顶栏 ============ */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px 8px;
+    flex: 0 0 auto;
+    z-index: 5;
+  }
+
+  .topbar-close {
+    width: 32px; height: 32px;
+    display: grid; place-items: center;
+    border: none; background: rgba(0,0,0,0.05);
+    color: var(--text2); font-size: 16px; font-weight: 700;
+    cursor: pointer; border-radius: 50%;
+    transition: background 0.15s, transform 0.15s;
+  }
+  .topbar-close:active { background: rgba(0,0,0,0.12); transform: scale(0.92); }
+
+  .page-indicator {
+    font-size: 13.5px; color: var(--text2);
+    font-weight: 700; letter-spacing: 0.03em;
+  }
+
+  /* ============ 页面容器 ============ */
+  .viewport {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 4px 0 20px;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+  .viewport::-webkit-scrollbar { width: 0; }
+
+  .page {
+    display: none;
+    padding: 2px 0 16px;
+    animation: pageIn 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .page.active { display: block; }
+
+  @keyframes pageIn {
+    from { opacity: 0; transform: translateX(10px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  /* ============ iOS 玻璃拟态卡片 ============ */
+  .glass-card {
+    background: var(--card);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+    margin: 0 14px 14px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.04);
+  }
+
+  .section-title {
+    padding: 14px 20px 6px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--text2);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  /* ============ 第 1 页：主页资料 ============ */
+  .profile-box {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 22px 20px;
+  }
+
+  .avatar {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: #fff;
+    display: grid; place-items: center;
+    border: 3px solid #fff;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .avatar svg { width: 54px; height: 54px; display: block; }
+
+  .profile-info { flex: 1; min-width: 0; }
+  .profile-name { font-size: 22px; font-weight: 700; color: var(--text); }
+  .profile-sub { font-size: 13px; color: var(--text2); margin-top: 4px; font-weight: 700; line-height: 1.4; }
+
+  .info-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--line);
+  }
+  .info-row:last-child { border-bottom: none; }
+  .info-label { font-size: 14px; color: var(--text2); font-weight: 700; }
+  .info-value { font-size: 14px; color: var(--text); font-weight: 700; text-align: right; }
+
+  .editable {
+    outline: none;
+    min-height: 28px;
+    padding: 14px 18px;
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text);
+    font-weight: 700;
+    border-radius: 12px;
+    transition: background 0.15s;
+  }
+  .editable:focus { background: var(--pink-pale); }
+  .editable:empty::before { content: attr(data-placeholder); color: var(--text3); }
+
+  /* 关系状态环组件 */
+  .ring-wrap { display: flex; align-items: center; gap: 18px; padding: 20px; }
+  .ring {
+    position: relative; flex: 0 0 72px; width: 72px; height: 72px;
+    border-radius: 50%; background: conic-gradient(var(--pink) 0 75%, #e5e5ea 75% 100%);
+  }
+  .ring::after {
+    content: "75%"; position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%); width: 52px; height: 52px;
+    border-radius: 50%; background: #fff; display: grid; place-items: center;
+    font-size: 14px; font-weight: 700; color: var(--pink-deep);
+  }
+  .ring-text strong { display: block; font-size: 15px; color: var(--text); font-weight: 700; margin-bottom: 3px; }
+  .ring-text span { font-size: 12.5px; color: var(--text2); font-weight: 700; }
+
+  /* 快捷入口网格 */
+  .chip-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 14px; }
+  .chip {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.7);
+    border: 1px solid var(--line); font-size: 13.5px; font-weight: 700;
+    color: var(--text); cursor: pointer; transition: all 0.15s; text-decoration: none;
+  }
+  .chip:active { background: var(--pink-pale); border-color: var(--pink); transform: scale(0.97); }
+
+  /* ============ 第 2 页：提醒 & 播放器 ============ */
+  .plan-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 18px; border-bottom: 1px solid var(--line);
+    cursor: pointer; user-select: none;
+  }
+  .plan-item:last-child { border-bottom: none; }
+  .plan-check {
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 2px solid var(--text3); display: grid; place-items: center;
+    font-size: 11px; color: transparent; font-weight: 700; transition: all 0.2s;
+  }
+  .plan-item.done .plan-check { background: var(--pink); border-color: var(--pink); color: #fff; }
+  .plan-text { font-size: 14px; color: var(--text); font-weight: 700; flex: 1; outline: none; }
+  .plan-item.done .plan-text { text-decoration: line-through; color: var(--text2); }
+
+  /* Apple Music 风格播放器组件 */
+  .apple-music-card {
+    background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,230,240,0.7));
+    backdrop-filter: blur(30px);
+    border: 1px solid rgba(255,255,255,0.8);
+    border-radius: 24px;
+    padding: 20px;
+    margin: 4px 14px 14px;
+    box-shadow: 0 12px 40px rgba(224,122,165,0.18);
+  }
+  .am-top { display: flex; align-items: center; gap: 14px; }
+  .am-cover {
+    width: 60px; height: 60px; border-radius: 14px; background: #333;
+    overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.15); flex-shrink: 0;
+    display: grid; place-items: center; color: #fff; font-size: 22px;
+  }
+  .am-cover img { width: 100%; height: 100%; object-fit: cover; }
+  .am-meta { flex: 1; min-width: 0; }
+  .am-tag { font-size: 11px; color: var(--pink-deep); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+  .am-title { font-size: 16px; font-weight: 700; color: var(--text); margin-top: 2px; }
+  .am-artist { font-size: 12.5px; color: var(--text2); font-weight: 700; margin-top: 1px; }
+
+  .am-progress { margin-top: 16px; height: 4px; border-radius: 2px; background: rgba(0,0,0,0.1); overflow: hidden; }
+  .am-progress-fill { width: 0%; height: 100%; background: var(--pink-deep); border-radius: 2px; transition: width 0.3s linear; }
+
+  .am-controls { display: flex; align-items: center; justify-content: center; gap: 32px; margin-top: 16px; }
+  .am-btn { border: none; background: transparent; color: var(--text); font-size: 18px; font-weight: 700; cursor: pointer; }
+  .am-btn-play {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--pink-deep); color: #fff; display: grid; place-items: center; font-size: 16px;
+    box-shadow: 0 4px 12px rgba(224,122,165,0.4);
+    transition: transform 0.15s;
+  }
+  .am-btn-play:active { transform: scale(0.92); }
+
+  /* ============ 第 3 页：新邮件 & iMessage 聊天 ============ */
+  .mail-card-btn {
+    display: flex; align-items: center; gap: 14px;
+    padding: 18px; margin: 4px 14px 14px;
+    background: var(--card); backdrop-filter: blur(25px);
+    border: 1.5px solid var(--pink); border-radius: var(--radius);
+    cursor: pointer; box-shadow: 0 6px 20px rgba(242,166,194,0.2);
+    transition: transform 0.15s, background 0.15s;
+  }
+  .mail-card-btn:active { transform: scale(0.98); background: var(--pink-pale); }
+  .mail-icon {
+    width: 46px; height: 46px; border-radius: 14px;
+    background: var(--pink-pale); color: var(--pink-deep);
+    display: grid; place-items: center; font-size: 20px; font-weight: 700;
+  }
+  .mail-info { flex: 1; }
+  .mail-title { font-size: 15px; font-weight: 700; color: var(--text); }
+  .mail-desc { font-size: 12.5px; color: var(--text2); font-weight: 700; margin-top: 2px; }
+  .mail-badge {
+    background: #ff3b30; color: #fff; font-size: 11px; font-weight: 700;
+    padding: 2px 8px; border-radius: 10px;
+  }
+
+  /* iMessage 专属暗色毛玻璃弹窗 */
+  .imessage-modal {
+    position: absolute; inset: 0; background: #000000; z-index: 100;
+    display: none; flex-direction: column; animation: modalIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .imessage-modal.active { display: flex; }
+  @keyframes modalIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+  .im-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 18px; background: rgba(28,28,30,0.9); backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255,255,255,0.1); color: #fff;
+  }
+  .im-back { border: none; background: transparent; color: var(--pink); font-size: 16px; font-weight: 700; cursor: pointer; }
+  .im-title { font-size: 16px; font-weight: 700; color: #fff; }
+
+  .im-body {
+    flex: 1; overflow-y: auto; padding: 18px; background: #0b0b0d;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .im-bubble {
+    max-width: 82%; padding: 12px 16px; border-radius: 20px;
+    font-size: 14px; font-weight: 700; line-height: 1.6;
+  }
+  .im-bubble.sender {
+    background: #007aff; color: #fff; align-self: flex-end; border-bottom-right-radius: 4px;
+  }
+  .im-bubble.receiver {
+    background: #26262a; color: #f2f2f7; align-self: flex-start; border-bottom-left-radius: 4px;
+    border: 1px solid rgba(255,255,255,0.06); outline: none;
+  }
+
+  .im-footer {
+    display: flex; align-items: center; gap: 10px; padding: 12px 18px;
+    background: #1c1c1e; border-top: 1px solid rgba(255,255,255,0.1);
+  }
+  .im-input {
+    flex: 1; border: none; border-radius: 20px; padding: 10px 16px;
+    font-size: 14px; font-weight: 700; outline: none; background: #2c2c2e; color: #fff;
+  }
+  .im-send {
+    border: none; background: var(--pink-deep); color: #fff;
+    width: 36px; height: 36px; border-radius: 50%; font-weight: 700;
+    cursor: pointer; display: grid; place-items: center;
+  }
+
+  /* ============ 第 4 页：微信朋友圈 ============ */
+  .moments-cover {
+    position: relative; height: 170px; background: #e0e0e0; margin-bottom: 42px;
+  }
+  .moments-cover-img { width: 100%; height: 100%; object-fit: cover; }
+  .moments-user-row {
+    position: absolute; right: 18px; bottom: -24px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .moments-name { color: #fff; font-size: 18px; font-weight: 700; text-shadow: 0 1px 6px rgba(0,0,0,0.6); }
+  .moments-avatar {
+    width: 70px; height: 70px; border-radius: 14px;
+    border: 3px solid #fff; overflow: hidden; background: #fff;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+  }
+  .moments-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+  .moment-post { background: var(--card); backdrop-filter: blur(25px); border-radius: var(--radius); margin: 0 14px 14px; padding: 18px; border: 1px solid var(--glass-border); }
+  .mp-head { display: flex; gap: 12px; }
+  .mp-av { width: 44px; height: 44px; border-radius: 10px; overflow: hidden; flex-shrink: 0; }
+  .mp-av img { width: 100%; height: 100%; object-fit: cover; }
+  .mp-main { flex: 1; }
+  .mp-author { font-size: 15px; font-weight: 700; color: #576b95; }
+  .mp-text { font-size: 14px; font-weight: 700; color: var(--text); margin-top: 6px; line-height: 1.6; }
+  .mp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 12px; }
+  .mp-img { aspect-ratio: 1; border-radius: 8px; overflow: hidden; background: #eee; cursor: pointer; }
+  .mp-img img { width: 100%; height: 100%; object-fit: cover; }
+  .mp-time { font-size: 12px; color: var(--text2); font-weight: 700; margin-top: 10px; }
+
+  /* ============ 底部导航栏 ============ */
+  .tabbar {
+    flex: 0 0 auto; display: flex; align-items: center; justify-content: space-around;
+    padding: 10px 12px calc(14px + env(safe-area-inset-bottom));
+    background: rgba(255, 255, 255, 0.88); backdrop-filter: blur(25px);
+    border-top: 1px solid rgba(255, 255, 255, 0.6); z-index: 10;
+  }
+  .tab-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    border: none; background: transparent; color: var(--text2);
+    font-size: 11px; font-weight: 700; cursor: pointer; padding: 6px 12px;
+    border-radius: 16px; transition: all 0.2s;
+  }
+  .tab-btn.active { color: var(--pink-deep); background: rgba(242,166,194,0.15); }
+  .tab-icon { font-size: 18px; line-height: 1; }
+
+  .edit-hint {
+    margin: 0 14px 14px; padding: 10px 16px; border-radius: 12px;
+    background: var(--pink-pale); color: var(--pink-deep);
+    font-size: 12px; font-weight: 700; text-align: center;
+  }
+
+  @media (max-width: 480px) {
+    body { display: block; background: var(--bg); }
+    .app { width: 100%; height: 100vh; height: 100dvh; border-radius: 0; box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- 顶栏 -->
+  <header class="topbar">
+    <button class="topbar-close" id="closeBtn">✕</button>
+    <span class="page-indicator"><span id="curPage">1</span> / 4</span>
+  </header>
+
+  <!-- 页面容器 -->
+  <main class="viewport" id="viewport">
+
+    <!-- ============ 第 1 页：主页 (个人资料 + 须知 + 关系状态备注) ============ -->
+    <section class="page active" data-page="0">
+      <div class="glass-card profile-box">
+        <!-- 头像 URL 放置位置 -->
+        <div class="avatar">
+          <img src="" id="avatarImg" alt="头像" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" style="display:none;">
+          <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="15,22 21,7 30,19" fill="#4a4a4a"/>
+            <polygon points="49,22 43,7 34,19" fill="#4a4a4a"/>
+            <circle cx="32" cy="33" r="17" fill="#5c5c5c"/>
+            <circle cx="25.5" cy="31" r="3.2" fill="#1c1c1e"/>
+            <circle cx="38.5" cy="31" r="3.2" fill="#1c1c1e"/>
+            <circle cx="32" cy="37" fill="#f2a6c2"/>
+          </svg>
+        </div>
+        <div class="profile-info">
+          <!-- 植入 docx 内容 -->
+          <div class="profile-name">姜好 / 姜姜</div>
+          <div class="profile-sub">⁺₊♡約會日.ᐟ.ᐟ.ᐟ☆*u and me.*★<br>Weather：晴... 适合睡觉</div>
+        </div>
+      </div>
+
+      <div class="section-title">▍ 信息查阅 (基本信息)</div>
+      <div class="glass-card">
+        <div class="info-row"><span class="info-label">约会装扮</span><span class="info-value">耳坠正太</span></div>
+        <div class="info-row"><span class="info-label">属性</span><span class="info-value">21 · 双子 · 八无 · LE ENFP</span></div>
+        <div class="info-row"><span class="info-label">想做的事</span><span class="info-value">只想和你做</span></div>
+        <div class="info-row"><span class="info-label">约会地点</span><span class="info-value">余烬</span></div>
+      </div>
+
+      <div class="section-title">自我介绍与悄悄话</div>
+      <div class="glass-card">
+        <div class="editable" contenteditable="true" data-placeholder="点击在此编辑...">很想你 今天天气很好 适合睡觉。好 睡荤的还是素的？</div>
+      </div>
+
+      <div class="section-title">默认恋人关系须知 (熟读以下内容)</div>
+      <div class="glass-card">
+        <div style="padding: 16px 18px; font-size: 13.5px; line-height: 1.8; color: var(--text);">
+          <p>▾ <b>默认恋人关系须知：</b></p>
+          <p>• 婉拒男板 / 低恋板 / 萌新板 / 低代入 / 单口半单口 / 不配合</p>
+          <p>• 婉拒一恋多 / 旁观插话 / 审视 / 熟人披马甲（别被我认出来）</p>
+          <p>• 习惯回合制对话 偶尔可以 次数多了我会叫停退单</p>
+          <p>• 严拒单内恶搞接恶俗烂梗 接到永拒 + 避雷条</p>
+          <p>• 别莫名对我有太大期待 / 幻想 我只是一个喜欢甜甜恋爱的普通人不喜剖析 我不会剖析你 也不要剖析我</p>
+          <p>• 单内不看微信 有什么话直接单内说就可以</p>
+          <p>• 不喜小窝 婉拒小窝（太社恐了，更喜欢二人世界）</p>
+          <p>• 单后正常清好友</p>
+          <p>• 期待见面</p>
+          <p style="margin-top: 8px; color: var(--pink-deep);">▴ 以上须知默认已读</p>
+        </div>
+      </div>
+
+      <div class="section-title">快捷入口</div>
+      <div class="glass-card">
+        <div class="chip-grid">
+          <a href="#" class="chip">［板评］</a>
+          <a href="#" class="chip">［卡类］</a>
+          <a href="#" class="chip">［排班表］</a>
+          <a href="#" class="chip">点击跳转 ↗</a>
+        </div>
+      </div>
+
+      <div class="section-title">关系状态与备注</div>
+      <div class="glass-card">
+        <div class="ring-wrap">
+          <div class="ring" aria-hidden="true"></div>
+          <div class="ring-text">
+            <strong>我们什么关系？蜜雪冰城吧</strong>
+            <span>-ω- 520.1314.…姜好 · @ 未 完 依 旧 持 续</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-card">
+        <div class="editable" contenteditable="true">感恩自己，鸣谢自己，成功勾引到很好很好的你。</div>
+      </div>
+
+      <div class="edit-hint">✨ 整体采用 iOS 玻璃拟态设计，文本均可点击编辑</div>
+    </section>
+
+    <!-- ============ 第 2 页：提醒 (Plan List) & 个人旋律播放器 ============ -->
+    <section class="page" data-page="1">
+      <div class="section-title">Plan List 待办清单</div>
+      <div class="glass-card">
+        <div class="plan-item done" data-plan>
+          <span class="plan-check">✓</span>
+          <div class="plan-text" contenteditable="true">Drink water</div>
+        </div>
+        <div class="plan-item done" data-plan>
+          <span class="plan-check">✓</span>
+          <div class="plan-text" contenteditable="true">Read a book</div>
+        </div>
+        <div class="plan-item" data-plan>
+          <span class="plan-check">✓</span>
+          <div class="plan-text" contenteditable="true">Early to bed</div>
+        </div>
+      </div>
+
+      <div class="section-title">个人旋律 ▍</div>
+      <div class="glass-card">
+        <div style="padding: 16px 18px; font-size: 14px; line-height: 1.7;">
+          <p style="color: var(--pink-deep);"><b>主旋律：</b></p>
+          <p>白话 日常 挑逗 恶趣味 热脸贱</p>
+          <p style="color: var(--pink-deep); margin-top: 10px;"><b>副旋律：</b></p>
+          <p>轻浮 微擦 对抗路 deeptalk 偶尔掉落特别旋律</p>
+          <p style="color: var(--text2); margin-top: 8px; font-size: 12.5px;">社畜淡淡人机 我一定要上班吗 发现说话的时候把眼睛闭上很舒服</p>
+        </div>
+      </div>
+
+      <div class="section-title">Now Playing (音乐播放器)</div>
+      <!-- 音频文件 URL 放置位置 -->
+      <audio id="bgMusic" src="" preload="auto"></audio>
+      <div class="apple-music-card">
+        <div class="am-top">
+          <div class="am-cover" id="amCoverBox">♪</div>
+          <div class="am-meta">
+            <div class="am-tag">Now Playing</div>
+            <div class="am-title">Cherry Wine</div>
+            <div class="am-artist" id="musicSub">▸𐙚♡ı||ııı||⊹ 520:1314 🎧 ♪ · 已暂停</div>
+          </div>
+        </div>
+        <div class="am-progress"><div class="am-progress-fill" id="musicFill"></div></div>
+        <div class="am-controls">
+          <button class="am-btn">⏮</button>
+          <button class="am-btn am-btn-play" id="playBtn">▶</button>
+          <button class="am-btn">⏭</button>
+        </div>
+      </div>
+
+      <div class="edit-hint">🎵 可以在代码的 CONFIG.musicUrl 处填入您的专属音频 URL</div>
+    </section>
+
+    <!-- ============ 第 3 页：新邮件 & iMessage 消息交互 (悄悄话与语录) ============ -->
+    <section class="page" data-page="2">
+      <div class="section-title">新邮件提醒 (点击进入 iMessage 互动)</div>
+      <div class="mail-card-btn" id="openImessageBtn">
+        <div class="mail-icon">✉</div>
+        <div class="mail-info">
+          <div class="mail-title">You got a new message</div>
+          <div class="mail-desc">Don't forget to smile today!</div>
+        </div>
+        <span class="mail-badge">1</span>
+      </div>
+
+      <div class="section-title">语录精选 (点击可直接编辑)</div>
+      <div class="glass-card">
+        <div class="editable" contenteditable="true">此女最喜欢随单麦 尾音上扬时我们靠得更近了 心也是</div>
+      </div>
+      <div class="glass-card">
+        <div class="editable" contenteditable="true">邪恶姜坏勾引第一步：这位女士 不好意思说话就先牵紧我吧</div>
+      </div>
+      <div class="glass-card">
+        <div class="editable" contenteditable="true">Heaven has blessed me with a wonderful, wonderful you . 𝒍𝒐𝒗𝒆 𝒚𝒐𝒖♡²</div>
+      </div>
+      <div class="glass-card">
+        <div class="editable" contenteditable="true">真没找借口 借口不是 把你借我亲一口吗……</div>
+      </div>
+
+      <div class="edit-hint">💌 点击上方「You got a new message」进入 iMessage 互动对话界面</div>
+    </section>
+
+    <!-- ============ 第 4 页：微信朋友圈 ============ -->
+    <section class="page" data-page="3">
+      <div class="moments-cover">
+        <!-- 朋友圈封面图 URL -->
+        <img src="https://images.unsplash.com/photo-1518895949257-7621c3c786d7?w=800" alt="封面" class="moments-cover-img" id="momentsCoverImg">
+        <div class="moments-user-row">
+          <div class="moments-name">姜好</div>
+          <div class="moments-avatar">
+            <img src="" id="momentsAvatarImg" alt="头像" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'64\' height=\'64\'><rect width=\'100%\' height=\'100%\' fill=\'%23f2a6c2\'/></svg>'">
+          </div>
+        </div>
+      </div>
+
+      <div class="moment-post">
+        <div class="mp-head">
+          <div class="mp-av"><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200" alt=""></div>
+          <div class="mp-main">
+            <div class="mp-author">姜好</div>
+            <div class="mp-text editable" contenteditable="true">Have a nice day! ❤ 你有一条待回复信息。</div>
+            <div class="mp-grid">
+              <div class="mp-img"><img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600" alt=""></div>
+              <div class="mp-img"><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600" alt=""></div>
+              <div class="mp-img"><img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600" alt=""></div>
+            </div>
+            <div class="mp-time">10分钟前</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="moment-post">
+        <div class="mp-head">
+          <div class="mp-av"><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200" alt=""></div>
+          <div class="mp-main">
+            <div class="mp-author">姜好</div>
+            <div class="mp-text editable" contenteditable="true">再过来点，我唱给你听；骗你的，只想亲你 🎵</div>
+            <div class="mp-time">2小时前</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="edit-hint">📷 微信朋友圈风格动态，图文内容支持随时更改</div>
+    </section>
+
+  </main>
+
+  <!-- ============ iMessage 互动对话弹窗 ============ -->
+  <div class="imessage-modal" id="imessageModal">
+    <div class="im-header">
+      <button class="im-back" id="closeImessage">‹ 返回</button>
+      <div class="im-title">姜好 · iMessage</div>
+      <div style="width:30px;"></div>
+    </div>
+    <div class="im-body" id="imBody">
+      <!-- 固定发信人讯息 -->
+      <div class="im-bubble sender">我想多了解一点</div>
+      <div class="im-bubble receiver" contenteditable="true">Have a nice day! ❤</div>
+      <div class="im-bubble sender">You too! ❤</div>
+      <div class="im-bubble receiver" contenteditable="true">Next is our dating time 💐</div>
+      <div class="im-bubble receiver" contenteditable="true">再过来点，我唱给你听：骗你的，只想亲你 💕</div>
+    </div>
+    <div class="im-footer">
+      <input type="text" class="im-input" id="imInput" placeholder="发消息...">
+      <button class="im-send" id="imSendBtn">↑</button>
+    </div>
+  </div>
+
+  <!-- 底部 iOS 玻璃拟态导航栏 -->
+  <nav class="tabbar" id="tabbar">
+    <button class="tab-btn active" data-target="0">
+      <span class="tab-icon">👤</span>
+      <span>主页</span>
+    </button>
+    <button class="tab-btn" data-target="1">
+      <span class="tab-icon">📌</span>
+      <span>提醒</span>
+    </button>
+    <button class="tab-btn" data-target="2">
+      <span class="tab-icon">✉️</span>
+      <span>邮件</span>
+    </button>
+    <button class="tab-btn" data-target="3">
+      <span class="tab-icon">📷</span>
+      <span>动态</span>
+    </button>
+  </nav>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ============ 全局 CONFIG 参数配置区 ============ */
+  var CONFIG = {
+    avatarUrl: "",     // 在此处填入您的头像 URL
+    musicUrl: "",      // 在此处填入您的背景音频 URL
+    albumCoverUrl: ""  // 在此处填入播放器专辑封面 URL
+  };
+
+  /* 初始化加载图片与音频 */
+  if (CONFIG.avatarUrl) {
+    document.getElementById("avatarImg").src = CONFIG.avatarUrl;
+    document.getElementById("avatarImg").style.display = "block";
+    document.getElementById("momentsAvatarImg").src = CONFIG.avatarUrl;
+  }
+  if (CONFIG.musicUrl) {
+    document.getElementById("bgMusic").src = CONFIG.musicUrl;
+  }
+  if (CONFIG.albumCoverUrl) {
+    document.getElementById("amCoverBox").innerHTML = '<img src="' + CONFIG.albumCoverUrl + '" alt="封面">';
+  }
+
+  /* ============ 4 个板块平滑切换控制 ============ */
+  var pages = document.querySelectorAll(".page");
+  var tabBtns = document.querySelectorAll(".tab-btn");
+  var viewport = document.getElementById("viewport");
+  var curPageEl = document.getElementById("curPage");
+  var current = 0;
+
+  function switchPage(index) {
+    if (index < 0 || index >= pages.length || index === current) return;
+
+    pages[current].classList.remove("active");
+    tabBtns[current].classList.remove("active");
+
+    current = index;
+
+    pages[current].classList.add("active");
+    tabBtns[current].classList.add("active");
+
+    curPageEl.textContent = current + 1;
+    viewport.scrollTop = 0;
+  }
+
+  tabBtns.forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      switchPage(parseInt(btn.dataset.target, 10));
+    });
+  });
+
+  /* 顶栏关闭按钮返回主页 */
+  document.getElementById("closeBtn").addEventListener("click", function () { switchPage(0); });
+
+  /* 键盘左右键与滑动切页支持 */
+  document.addEventListener("keydown", function (e) {
+    var tag = (e.target.tagName || "").toLowerCase();
+    if (tag === "input" || tag === "textarea" || e.target.isContentEditable) return;
+    if (e.key === "ArrowLeft") switchPage(current - 1);
+    if (e.key === "ArrowRight") switchPage(current + 1);
+  });
+
+  /* ============ Plan List 勾选控制 ============ */
+  document.querySelectorAll("[data-plan]").forEach(function (item) {
+    item.addEventListener("click", function (e) {
+      if (e.target.classList.contains("plan-text")) return;
+      item.classList.toggle("done");
+    });
+  });
+
+  /* ============ 音乐播放控制逻辑 ============ */
+  var playBtn = document.getElementById("playBtn");
+  var musicFill = document.getElementById("musicFill");
+  var musicSub = document.getElementById("musicSub");
+  var bgMusic = document.getElementById("bgMusic");
+  var isPlaying = false, progress = 0, timer = null;
+
+  playBtn.addEventListener("click", function () {
+    isPlaying = !isPlaying;
+
+    if (isPlaying) {
+      playBtn.textContent = "⏸";
+      if (CONFIG.musicUrl) bgMusic.play().catch(function(){});
+      timer = setInterval(function () {
+        progress += 0.4;
+        if (progress >= 100) progress = 0;
+        musicFill.style.width = progress + "%";
+      }, 100);
+      musicSub.textContent = "▸𐙚♡ı||ııı||⊹ 520:1314 🎧 ♪ · 正在播放";
+    } else {
+      playBtn.textContent = "▶";
+      if (CONFIG.musicUrl) bgMusic.pause();
+      clearInterval(timer);
+      timer = null;
+      musicSub.textContent = "▸𐙚♡ı||ııı||⊹ 520:1314 🎧 ♪ · 已暂停";
+    }
+  });
+
+  /* ============ iMessage 对话互动弹窗 ============ */
+  var imModal = document.getElementById("imessageModal");
+  var openImBtn = document.getElementById("openImessageBtn");
+  var closeImBtn = document.getElementById("closeImessage");
+  var imBody = document.getElementById("imBody");
+  var imInput = document.getElementById("imInput");
+  var imSendBtn = document.getElementById("imSendBtn");
+
+  openImBtn.addEventListener("click", function () {
+    imModal.classList.add("active");
+    imBody.scrollTop = imBody.scrollHeight;
+  });
+
+  closeImBtn.addEventListener("click", function () {
+    imModal.classList.remove("active");
+  });
+
+  function sendImMessage() {
+    var text = imInput.value.trim();
+    if (!text) return;
+
+    var userBubble = document.createElement("div");
+    userBubble.className = "im-bubble sender";
+    userBubble.textContent = text;
+    imBody.appendChild(userBubble);
+    imInput.value = "";
+    imBody.scrollTop = imBody.scrollHeight;
+
+    setTimeout(function() {
+      var replyBubble = document.createElement("div");
+      replyBubble.className = "im-bubble receiver";
+      replyBubble.setAttribute("contenteditable", "true");
+      replyBubble.textContent = "收到你的讯息啦！今天也要开心哦 ❤️";
+      imBody.appendChild(replyBubble);
+      imBody.scrollTop = imBody.scrollHeight;
+    }, 1000);
+  }
+
+  imSendBtn.addEventListener("click", sendImMessage);
+  imInput.addEventListener("keypress", function (e) {
+    if (e.key === "Enter") sendImMessage();
+  });
+
+})();
+</script>
+
+</body>
+</html>
